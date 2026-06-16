@@ -20,7 +20,7 @@ def load_user(user_id):
 
 @app.route("/login", methods=["POST"])
 def login():
-    data = request.get_json(silent=True) or {}
+    data = request.json
     username = data.get("username")
     password = data.get("password")
 
@@ -41,6 +41,25 @@ def logout():
     logout_user()
     return jsonify({"message": "Logout realizado com sucesso"})
 
+@app.route("/user", methods=["POST"])
+def create_user():
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+
+    if not(username and password):
+        return jsonify({"message": "Dados inválidos"}), 401
+
+    user = User.query.filter_by(username=username).first()
+
+    if user:
+        return jsonify({"message": "Usuário já existe no sistema"}), 409
+        
+    new_user = User(username=username, password = password)
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"message": "Usuário cadastrado com sucesso"})
+    
 @app.route("/hello_world", methods=["GET"])
 def hello_world():
     return "Hello, World!"
