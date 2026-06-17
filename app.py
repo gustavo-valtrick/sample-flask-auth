@@ -99,10 +99,6 @@ def delete_user(id_user):
     db.session.commit()
     
     return jsonify({"message": f"Usuário {id_user} deletado com sucesso"})
-    
-@app.route("/hello_world", methods=["GET"])
-def hello_world():
-    return "Hello, World!"
 
 if __name__ == "__main__":
     app.run(debug=True)
