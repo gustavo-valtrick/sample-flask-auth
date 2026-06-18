@@ -54,7 +54,7 @@ def create_user():
     if user:
         return jsonify({"message": "Usuário já existe no sistema"}), 409
         
-    new_user = User(username=username, password = password)
+    new_user = User(username=username, password=password, role="user")
     db.session.add(new_user)
     db.session.commit()
     return jsonify({"message": "Usuário cadastrado com sucesso"})
@@ -72,6 +72,9 @@ def read_user(id_user):
 @app.route("/user/<int:id_user>", methods=["PUT"])
 @login_required
 def update_user(id_user):    
+    if current_user.id != id_user and current_user.role == "user":
+        return jsonify({"message": "Operação não permitida"}), 403
+    
     data = request.json
     user = User.query.get(id_user)
     
@@ -86,6 +89,9 @@ def update_user(id_user):
 @app.route("/user/<int:id_user>", methods=["DELETE"])
 @login_required
 def delete_user(id_user):   
+    if current_user.role == "user":
+        return jsonify({"message": "Operação não permitida"}), 403
+    
     if current_user.id == id_user:
         return jsonify({"message": "Deleção não permitida"}), 403
     
