@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from database import db
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from bcrypt import hashpw, gensalt, checkpw
 from models.user import User
 
 app = Flask(__name__)
@@ -28,7 +29,7 @@ def login():
 
     user = User.query.filter_by(username=username).first()
     
-    if (not user) or (password != user.password):
+    if not (user and checkpw(str.encode(password), str.encode(user.password))):
         return jsonify({"message": "Credenciais inválidas"}), 400
     
     login_user(user)    
@@ -53,8 +54,10 @@ def create_user():
 
     if user:
         return jsonify({"message": "Usuário já existe no sistema"}), 409
+    
+    hashed_password = hashpw(str.encode(password), gensalt(12))
         
-    new_user = User(username=username, password=password, role="user")
+    new_user = User(username=username, password=hashed_password, role="user")
     db.session.add(new_user)
     db.session.commit()
     return jsonify({"message": "Usuário cadastrado com sucesso"})
